@@ -101,7 +101,7 @@ nolugares.acm$var$coord
     #¡¡esto es un artefacto que no tiene mucho sentido!!
     coord.1.2 <- nolugares.acm$ind$coord[,1:2]
     coord.1.2 
-    ind.ponderado <- nolugares.acm$ind$coord[,1:2] %*% c(.19, .14) #producto matricial coords * % inercia p/dim, 
+    ind.ponderado <- nolugares.acm$ind$coord[,1:2] %*% c(.19, .14) #producto matricial coords * % inercia p/dim, se puede/debe normaliar tambien
     ind.ponderado
     
     ind.ponderado.cat <- cut(ind.ponderado, #creando los niveles 
@@ -115,8 +115,12 @@ nolugares.acm$var$coord
     no_lug_ind_gen <- no_lug_index_cat %>%  #uniendo indice categórico
       left_join(ind.ponderado.niveles)
     
-    nolugares.ind.ponderado.acm <- MCA(no_lug_ind_gen, quali.sup = c(2,3,4,25,26,27) , quanti.sup = c(1,23,24))
+    nolugares.ind.ponderado.acm <- MCA(no_lug_ind_gen, 
+                                       quali.sup = c(2,3,4,25,26,27),
+                                       quanti.sup = c(1,23,24))
     
-    plot(nolugares.ind.ponderado.acm , invisible=c("var"), autoLab = "yes",cex=1, habillage = "ind.ponderado.cat", col.quali.sup = "blue",
+    plot(nolugares.ind.ponderado.acm , invisible=c("var"), 
+         autoLab = "yes",cex=1, habillage = "ind.ponderado.cat", 
+         col.quali.sup = "blue", 
          selectMod = c("CATEDRA", "SEMINARIO", "PROGRAMA", "CENTRO")) 
     

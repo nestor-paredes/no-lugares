@@ -45,8 +45,9 @@ nolugares.acm
 mat_disyun <- nolugares.acm$call$Xtot #matriz disyuntiva 
 rm(mat_disyun)
 
-nolugares.acm$eig
-dasdasd
+nolugares.acm$var
+
+
 #Eigenvalues
 nolugares.acm$eig
 nolugares.acm$eig[,1] #Extrayendo % acumulados 

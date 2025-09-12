@@ -22,13 +22,13 @@ library(Factoshiny)
 nolugares.base <- read_csv("Datos/nolugares.csv")
 
 nolugares.1 <- nolugares.base %>% 
-  select(i_d, tipo_2, period, area,
+  select(tipo_2, period, area,
          com_dir, asesor_ext, com_tec, 
          coordinadxr, secret, particip, 
          financia, colab,invest, 
          docenc, difus, interdis, 
          intercam, vincula, espacio, 
-         editorial, coord, contrata)
+         editorial, coord)
 
 #rm(no_lugares) #eliminando dataframe original 
 
@@ -38,11 +38,12 @@ glimpse(nolugares.1) #verificando datos
 
 #nolugares.acm <- MCA(nolugares.2, quali.sup = 2:4, quanti.sup = 1 )
 
-nolugares.acm <- MCA(nolugares.1, quali.sup = c(2,3,4,22), quanti.sup = 1) 
+nolugares.acm <- MCA(nolugares.1, quali.sup = c(1,2,3)) 
 
 # Resultados 
 nolugares.acm
 mat_disyun <- nolugares.acm$call$Xtot #matriz disyuntiva 
+mat_disyun
 rm(mat_disyun)
 
 nolugares.acm$var
@@ -67,8 +68,19 @@ contrib <- nolugares.acm$var$contrib[,1:3]
 round(contrib,3)
 write_clip(round(contrib,2)) #copiando a portapapeles 
 
+
+contrib <- nolugares.acm$ind$contrib[,1:2]
+round(contrib,3)
+write_clip(round(contrib,2))
+
+
 #Coordenadas 
-coord <- nolugares.acm$var$coord[, 1:3]
+coord <- nolugares.acm$var$coord[, 1:2]
+round(coord,2)
+write_clip(round(coord,2))
+
+#Coordenada individuos 
+coord <- nolugares.acm$ind$coord[, 1:2]
 round(coord,2)
 write_clip(round(coord,2))
 
@@ -174,7 +186,10 @@ no_lug_8.HCPC$call$t$nb.clust
 
 
 
-
+plot(nolugares.acm, invisible=c("var", "quali.sup"), autoLab = "yes",cex=1, 
+           unselect = .7, select = c("8","4","21", "9", "58",
+                                     "27", "22", "53", "57", "48",
+                                     "50", "47"), title = "Ciencias")
 
 
 

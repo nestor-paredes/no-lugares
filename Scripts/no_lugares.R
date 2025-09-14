@@ -45,53 +45,54 @@ nolugares.acm
 mat_disyun <- nolugares.acm$call$Xtot #matriz disyuntiva 
 mat_disyun
 rm(mat_disyun)
-
-nolugares.acm$var
-
+#Aporte de los individuos
+nolugares.acm$ind
 
 #Eigenvalues
 nolugares.acm$eig
 nolugares.acm$eig[,1] #Extrayendo % acumulados 
-
 write_clip(round(nolugares.acm$eig,2)) 
 
-barplot(nolugares.acm$eig[,2], main = "Proporción de aporte de los valores propios")
+  barplot(nolugares.acm$eig[,2], main = "Proporción de aporte de los valores propios")
+  
+  #Guardando gráfico 
+  png("C:/Users/Néstor/Dropbox/Archivo R/Proyectos/no-lugares/Gráficos/valores_raiz.png", 
+      width = 800, height = 600)
+  barplot(nolugares.acm$eig[,2], main = "Proporción de aporte de los valores propios")
+  dev.off()    
+         
+#Contribuciones de las variables 
+contrib_v <- nolugares.acm$var$contrib[,1:2]
+round(contrib_v,3)
+write_clip(round(contrib_v,2)) #copiando a portapapeles 
 
-#Guardando gráfico 
-png("C:/Users/Néstor/Dropbox/Archivo R/Proyectos/no-lugares/Gráficos/valores_raiz.png", 
-    width = 800, height = 600)
-barplot(nolugares.acm$eig[,2], main = "Proporción de aporte de los valores propios")
-dev.off()    
-       
-#Contribuciones 
-contrib <- nolugares.acm$var$contrib[,1:3]
-round(contrib,3)
-write_clip(round(contrib,2)) #copiando a portapapeles 
+#Contribuciones de los individuos  
+contrib_i <- nolugares.acm$ind$contrib[,1:2]
+round(contrib_i,3)
+write_clip(round(contrib_i,2))
 
+#Coordenadas de las variables 
+coord_v <- nolugares.acm$var$coord[, 1:2]
+round(coord_v,2)
+write_clip(round(coord_v,2))
 
-contrib <- nolugares.acm$ind$contrib[,1:2]
-round(contrib,3)
-write_clip(round(contrib,2))
-
-
-#Coordenadas 
-coord <- nolugares.acm$var$coord[, 1:2]
-round(coord,2)
-write_clip(round(coord,2))
-
-#Coordenada individuos 
-coord <- nolugares.acm$ind$coord[, 1:2]
-round(coord,2)
-write_clip(round(coord,2))
+#Coordenadas de los individuos 
+coord_i <- nolugares.acm$ind$coord[, 1:2]
+round(coord_i,2)
+write_clip(round(coord_i,2))
 
 #Cos2
-cos2 <- nolugares.acm$var$cos2[, 1:3]
-round(cos2,3)
-write_clip(round(cos2,3))
+cos2_v <- nolugares.acm$var$cos2[, 1:2]
+round(cos2_v,3)
+write_clip(round(cos2_v,3))
+
+#Cos2
+cos2_i <- nolugares.acm$ind$cos2[, 1:2]
+round(cos2_i,3)
+write_clip(round(cos2_i,3))
 
 rm (contrib, coords)
-#Aporte de los individuos
-nolugares.acm$ind
+
 
 #########################
 #Seleccionando dimensiones 
@@ -176,12 +177,52 @@ plot(nolugares.acm, choix = c("ind"), axes=c(2,3),invisible=c("var"),
 ###########################
 #Clasificación 
 
-nolugares.hc <-HCPC(nolugares.acm,nb.clust=6,consol=FALSE,graph=T)
+nolugares.hc <-HCPC(nolugares.acm,nb.clust=-1,consol=FALSE,graph=T)
 nolugares.hc<-HCPC(nolugares.acm,nb.clust=6,consol=FALSE,graph=T, method = "ward")
 
+nolugares.hc
+
+
+nolugares.hc$data.clust$clust
+#Descripción de las modalidades en el cluster
+nolugares.hc$desc.var
+#Prueba chi2 entre la variable clust y las variables 
+nolugares.hc$desc.var$test.chi2
+#Prueba chi2 entre la variable clust y las modalidades 
+nolugares.hc$desc.var$category
+#Decripción de los clusters por las dimensiones  
+nolugares.hc$desc.axes
+#Descripción de la variable cluster por los ejes 
+nolugares.hc$desc.axes$quanti.var
+
+
+
+nolugares.hc$call
 
 nolugares.hc$call$t$nb.clust
-no_lug_8.HCPC$call$t$nb.clust
+
+
+
+nolugares.1 <- nolugares.base %>% 
+  select(tipo_2, period, area,
+         com_dir, asesor_ext, com_tec, 
+         coordinadxr, secret, particip, 
+         financia, colab,invest, 
+         docenc, difus, interdis, 
+         intercam, vincula, espacio, 
+         editorial, coord)
+
+#rm(no_lugares) #eliminando dataframe original 
+
+glimpse(nolugares.1) #verificando datos 
+
+#Ejecutando ACM
+
+#nolugares.acm <- MCA(nolugares.2, quali.sup = 2:4, quanti.sup = 1 )
+
+nolugares.acm <- MCA(nolugares.1, quali.sup = c(1,2,3)) 
+
+
 
 
 

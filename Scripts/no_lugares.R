@@ -36,8 +36,6 @@ glimpse(nolugares.1) #verificando datos
          
 #Ejecutando ACM
 
-#nolugares.acm <- MCA(nolugares.2, quali.sup = 2:4, quanti.sup = 1 )
-
 nolugares.acm <- MCA(nolugares.1, quali.sup = c(1,2,3)) 
 
 # Resultados 
@@ -45,15 +43,62 @@ nolugares.acm
 mat_disyun <- nolugares.acm$call$Xtot #matriz disyuntiva 
 mat_disyun
 rm(mat_disyun)
-#Aporte de los individuos
-nolugares.acm$ind
 
 #Eigenvalues
 nolugares.acm$eig
 nolugares.acm$eig[,1] #Extrayendo % acumulados 
 write_clip(round(nolugares.acm$eig,2)) 
 
+  #Dada N pequeña, tasas modificadas > Benzecri: los mismos resultados
+
+  #Extraer eigenvalores
+  eigenvalores <- nolugares.acm$eig[,1]  # columna "eigenvalue"
+  
+  #Número de variables activas (Q)
+  Q <- 17  # 20 variables menos 3 suplementarias
+  
+  #Umbral: solo eigenvalores > 1/Q
+  umbral <- 1 / Q
+  umbral
+  eigen_retenidos <- eigenvalores[eigenvalores > umbral]
+  eigen_retenidos
+    
+    #Criterio de la   
+    cbind(round(eigen_retenidos,3))
+    round(eigen_retenidos,3)
+    tabla <- cbind(round(eigen_retenidos, 3))
+    colnames(tabla) <- "eigenvalor"
+    tabla
+    write_clip(round(cbind(eigen_retenidos,3))) 
+    write_clip(tabla) 
+
+  #Calcular (λs - 1/Q)² para cada uno
+  numeradores <- (eigen_retenidos - umbral)^2
+  
+  #Suma total (denominador)
+  suma_total <- sum(numeradores)
+  
+  #Tasas modificadas
+  tasas_modificadas <- numeradores / suma_total * 100
+  
+  #Tasas acumuladas
+  tasas_acumuladas <- cumsum(tasas_modificadas)
+  
+  #Tabla de resultados
+  tabla_mod <- data.frame(
+    Dimension    = seq_along(eigen_retenidos),
+    Eigenvalor   = round(eigen_retenidos, 4),
+    Tasa_orig    = round(nolugares.acm$eig[eigenvalores > umbral, 2], 2),
+    Tasa_modif   = round(tasas_modificadas, 2),
+    Tasa_acum    = round(tasas_acumuladas, 2)
+  )
+  
+  print(tabla_mod)
+    
   barplot(nolugares.acm$eig[,2], main = "Proporción de aporte de los valores propios")
+  barplot(round(nolugares.acm$eig[eigenvalores > umbral, 2], 2), main = "Proporción de aporte de los valores propios") #alternativa con las tasas modificadas 
+
+  rm(tabla_mod)
   
   #Guardando gráfico 
   png("C:/Users/Néstor/Dropbox/Archivo R/Proyectos/no-lugares/Gráficos/valores_raiz.png", 
@@ -64,35 +109,59 @@ write_clip(round(nolugares.acm$eig,2))
 #Contribuciones de las variables 
 contrib_v <- nolugares.acm$var$contrib[,1:2]
 round(contrib_v,3)
-write_clip(round(contrib_v,2)) #copiando a portapapeles 
+#write_clip(round(contrib_v,2)) #copiando a portapapeles 
+
+
+#Variables por orden de contribución a la Dim 1
+nolugares.acm$var$contrib
+class(nolugares.acm$var$contrib)
+sort(round(nolugares.acm$var$contrib[,1],2), decreasing = T)
+
+
+#Variables por orden de contribución a la Dim 2
+nolugares.acm$var$contrib
+class(nolugares.acm$var$contrib)
+sort(round(nolugares.acm$var$contrib[,2],2), decreasing = T)
+
+
 
 #Contribuciones de los individuos  
 contrib_i <- nolugares.acm$ind$contrib[,1:2]
 round(contrib_i,3)
-write_clip(round(contrib_i,2))
+#write_clip(round(contrib_i,2))
 
 #Coordenadas de las variables 
 coord_v <- nolugares.acm$var$coord[, 1:2]
 round(coord_v,2)
-write_clip(round(coord_v,2))
+#write_clip(round(coord_v,2))
 
 #Coordenadas de los individuos 
 coord_i <- nolugares.acm$ind$coord[, 1:2]
 round(coord_i,2)
-write_clip(round(coord_i,2))
+#write_clip(round(coord_i,2))
 
 #Cos2
 cos2_v <- nolugares.acm$var$cos2[, 1:2]
 round(cos2_v,3)
-write_clip(round(cos2_v,3))
+#write_clip(round(cos2_v,3))
 
 #Cos2
 cos2_i <- nolugares.acm$ind$cos2[, 1:2]
 round(cos2_i,3)
-write_clip(round(cos2_i,3))
+#write_clip(round(cos2_i,3))
 
-rm (contrib, coords)
 
+tabla_eigenvalues <- data.frame(
+  Cntribuciones = round(contrib_v,3),
+  Coordenadas   = round(coord_v,3),
+  Cos2  = round(cos2_v,3)
+)
+
+tabla_eigenvalues
+write_clip(tabla_eigenvalues)
+
+
+rm (tabla_eigenvalues)
 
 #########################
 #Seleccionando dimensiones 
@@ -116,14 +185,15 @@ plot(nolugares.acm , invisible=c("ind", "quali.sup"), axes=c(1,2),
 #Las modalidades teóricamente relevantes 
 plot(nolugares.acm , invisible=c("ind"), axes=c(1,2),  autoLab = "yes", 
      cex=.9,  col.var = "black", col.quali.sup = "blue", unselect = .7, 
-     selectMod = c("mixta", "mix_int", "UNAM", "1 a 5", "16 a 20","11 a 15", 
-                   "6 a 10", "cero","asesor_ext","com_dir", "coordinadxr",
-                   "com_tec", "secretaria", "intercamb", "espac", "vincula", 
-                   "contrata", "difusión", "coord", "interdisc", "edito", 
-                   "docen", "colab", "investiga", "CATEDRA", "SEMINARIO", 
-                   "PROGRAMA", "CENTRO", "1991-2005","2006-2010", 
-                   "2011-2015","2016-2020", "2021-2024", "humanidades",
-                   "ciencias")) 
+     selectMod = c("intercamb", "mixta", "1 a 5", "no_vincula", "vincula","no_colab", 
+                   "16 a 20", "no_com_tec","11 a 15","UNAM", "no_investiga",
+                   "6 a 10", "mix_int", "no_espac", "coord", "no_interdisc",
+                   "asesor_ext", "docen", "secretaría", "no_com_tec", "interdisc", 
+                   "no_asesor_ex", "no_vincula", "no_secretaría", "coord", "11 a 15", 
+                   "no_difusion", "vincula", "cero", "no_coord", 
+                   "CATEDRA", "SEMINARIO","PROGRAMA", "CENTRO", 
+                   "1991-2005","2006-2010","2011-2015","2016-2020", "2021-2024", 
+                   "humanidades","ciencias")) 
 
 #Espacio factorial de los individuos dim 1 y 2
 plot(nolugares.acm, choix = c("ind"), axes=c(1,2),invisible=c("var"), 
@@ -177,13 +247,44 @@ plot(nolugares.acm, choix = c("ind"), axes=c(2,3),invisible=c("var"),
 ###########################
 #Clasificación 
 
-nolugares.hc <-HCPC(nolugares.acm,nb.clust=-1,consol=FALSE,graph=T)
+
 nolugares.hc<-HCPC(nolugares.acm,nb.clust=6,consol=FALSE,graph=T, method = "ward")
 
-nolugares.hc
-
-
+#Individuos por cluster
 nolugares.hc$data.clust$clust
+cbind(nolugares.hc$data.clust$clust) #en columna
+row.names(nolugares.hc$data.clust) #los nombres de la columna > los  individuos
+# divididos por cluster
+split(
+  rownames(nolugares.hc$data.clust),
+  nolugares.hc$data.clust$clust,
+)
+
+#Individuos por cluster
+rownames(nolugares.hc$data.clust)[nolugares.hc$data.clust$clust == 1]
+#cluster_1 <- rownames(nolugares.hc$data.clust)[nolugares.hc$data.clust$clust == 1]
+rownames(nolugares.hc$data.clust)[nolugares.hc$data.clust$clust == 2]
+rownames(nolugares.hc$data.clust)[nolugares.hc$data.clust$clust == 3]
+rownames(nolugares.hc$data.clust)[nolugares.hc$data.clust$clust == 4]
+rownames(nolugares.hc$data.clust)[nolugares.hc$data.clust$clust == 5]
+rownames(nolugares.hc$data.clust)[nolugares.hc$data.clust$clust == 6]
+
+#Verificando si son los mismos
+identical(
+  rownames(nolugares.1),
+  rownames(nolugares.hc$data.clust)
+)
+
+#Nuevo dataframe con la variable cluster como factor
+nolugares.1.cluster <- nolugares.1 |>
+  mutate(
+    cluster_6 = factor(
+      nolugares.hc$data.clust$clust,
+      labels = paste("Cluster_", levels(nolugares.hc$data.clust$clust))
+    )
+  )
+
+
 #Descripción de las modalidades en el cluster
 nolugares.hc$desc.var
 #Prueba chi2 entre la variable clust y las variables 
@@ -196,31 +297,6 @@ nolugares.hc$desc.axes
 nolugares.hc$desc.axes$quanti.var
 
 
-
-nolugares.hc$call
-
-nolugares.hc$call$t$nb.clust
-
-
-
-nolugares.1 <- nolugares.base %>% 
-  select(tipo_2, period, area,
-         com_dir, asesor_ext, com_tec, 
-         coordinadxr, secret, particip, 
-         financia, colab,invest, 
-         docenc, difus, interdis, 
-         intercam, vincula, espacio, 
-         editorial, coord)
-
-#rm(no_lugares) #eliminando dataframe original 
-
-glimpse(nolugares.1) #verificando datos 
-
-#Ejecutando ACM
-
-#nolugares.acm <- MCA(nolugares.2, quali.sup = 2:4, quanti.sup = 1 )
-
-nolugares.acm <- MCA(nolugares.1, quali.sup = c(1,2,3)) 
 
 
 
